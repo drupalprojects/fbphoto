@@ -1,0 +1,222 @@
+<?php
+
+/**
+ * @file
+ * FBPhoto module.
+ */
+
+/**
+ * Implements hook_filter_info().
+ */
+function fbphoto_filter_info() {
+  $filters['fbphoto'] = array(
+    'title' => t('Facebook photo'), 
+    'description' => t('Converts [fb:https://www.facebook.com/media/set/?set=a.299178216769602.79888.201606459860112&type=3] to inline images.'), 
+    'process callback' => 'fbphoto_filter_callback', 
+    'tips callback' => '_filter_autop_tips',
+    'cache' => FALSE, # @TODO: Remove me
+  );
+  return $filters;
+}
+
+function fbphoto_filter_callback($text, $filter) {
+  if (stripos($text, '[fb:') === FALSE) return;
+
+  preg_match_all('/(\[fb:[^\]]*\])/i', $text, $matches);
+  if (!empty($matches)) {
+    foreach ($matches[1] as $match) {
+      $url    = substr($match, 4, -1);
+      $output = '';
+      if ($info = fbphoto_get_params($url)) {
+        switch ($info['type']) {
+          case 'album':
+            dsm($info['id']);
+            $album  = fbphoto_get_album_photos($info['id']);
+            $output = theme('fbphoto_album', array('album' => $album));
+            $output = drupal_render($output);
+            unset($album);
+            break;
+          case 'photo':
+            $photo  = fbphoto_get_photo($info['id']);
+            $output = theme('fbphoto_photo', array('photo' => $photo));
+            $output = drupal_render($output);
+            unset($photo);
+            break;
+          default:
+            $output = '<!--- fbphoto: unsupported -->';
+            break;
+        }
+      }
+      
+      $find[]    = $match;
+      $replace[] = $output;
+    }
+    
+    if (!empty($find)) {
+      $text = str_replace($find, $replace, $text);
+    }
+  }
+  return $text;
+}
+
+function fbphoto_get_photo($id, $refresh = FALSE) {
+  if (!$refresh && ($cache = cache_get("fbphoto:{$id}"))) {
+    return $cache->data;
+  }
+  
+  if ($photo = fbphoto_request("http://graph.facebook.com/{$id}")) {
+    cache_set("fbphoto:{$id}", $photo, 'cache');
+    return $photo;
+  }
+}
+
+function fbphoto_get_album_photos($id, $refresh = FALSE) {
+  if (!$refresh && ($cache = cache_get("fbphoto:{$id}"))) {
+    return $cache->data;
+  }
+  
+  if ($album = fbphoto_request("http://graph.facebook.com/{$id}")) {
+    if ($photos = fbphoto_fetch_album_photos($album, $id)) {
+      $return = array('info' => $album, 'photos' => $photos);
+      cache_set("fbphoto:{$id}", $return, 'cache');
+      return $return;
+    }
+  }
+}
+
+function fbphoto_fetch_album_photos($album, $id = NULL, $url = NULL) {  
+  $photos = array();
+  $url = !empty($url) ? $url : "http://graph.facebook.com/{$id}/photos";
+  if ($graph = fbphoto_request($url)) {
+    $photos = array_merge($photos, $graph->data);
+    if (count($photos) < $album->count && !empty($graph->paging->next)) {
+      $photos = array_merge($photos, fbphoto_fetch_album_photos($album, NULL, $graph->paging->next));
+    }
+  }
+  return $photos;
+}
+
+/**
+ * Helper function to perform the http requests.
+ */
+function fbphoto_request($url, $json = TRUE, $method = 'GET', $params = NULL) {
+  $ch = curl_init();
+  curl_setopt($ch, CURLOPT_URL, $url);
+  curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+  if (strpos($url, 'https://') === 0) {
+    curl_setopt($ch, CURLOPT_PORT , 443);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+  }
+  if ($method === 'POST') {
+    curl_setopt($ch, CURLOPT_POST, TRUE);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
+  }
+
+  // Proxy
+  if (defined('FBPHOTO_CURL_PROXY')) {
+    curl_setopt($ch, CURLOPT_PROXY,     FBPHOTO_CURLOPT_PROXY);
+    curl_setopt($ch, CURLOPT_PROXYTYPE, FBPHOTO_CURLOPT_PROXYTYPE);
+    curl_setopt($ch, CURLOPT_PROXYPORT, FBPHOTO_CURLOPT_PROXYPORT);
+  }
+
+  if (!$response = curl_exec($ch)) {
+    $error = curl_error($ch);
+    drupal_set_message($error, 'error');
+  }
+  curl_close($ch);
+
+  if ($json) {
+    if ($response = json_decode($response)) {
+      return $response;
+    }
+  }
+
+  return $response;
+}
+
+/**
+ * Get params from URL.
+ */
+function fbphoto_get_params($url) {
+  $url   = parse_url($url);
+  $type  = strpos($url['path'], 'photo.php') !== FALSE ? 'photo' : 'album';
+  parse_str($url['query'], $query);
+  if ($type === 'album') {
+    // set=a.[ALBUM-ID].[RANDOM-NUMBER].[PROFILE-ID]
+    if (isset($query['set']) && strpos($query['set'], 'a.') === 0) {
+      $id = explode('.', $query['set']);
+      if (preg_match('/^[0-9]+$/', $id[1])) {
+        $id = $id[1];
+      }
+    }
+  }
+  elseif ($type === 'photo' && isset($query['fbid']) && preg_match('/^[0-9]+$/', $query['fbid'])) {
+    $id = $query['fbid'];
+  }
+  
+  if (!empty($id)) {
+    return array(
+      'type' => $type,
+      'id'   => $id,
+    );
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function fbphoto_theme() {
+  dsm(__FUNCTION__);
+  return array(
+    'fbphoto_photo' => array(
+      'variables' => array('photo' => NULL)
+    ),
+    'fbphoto_album' => array(
+      'variables' => array('album' => NULL)
+    ),
+  );
+}
+
+function theme_fbphoto_photo($variables) {
+  $photo = &$variables['photo'];
+  $img = $photo->images[1];
+  return array(
+    '#theme' => 'image',
+    '#attributes' => array('id' => "fbphoto-photo-{$photo->id}"),
+    '#path'   => $img->source,
+    '#height' => $img->height,
+    '#width'  => $img->width,
+    '#title'  => check_plain($photo->name),
+    '#prefix' => '<div class="fbphoto-photo">',
+    '#suffix' => '<div class="caption">'. check_plain($photo->name) .'</div></div>',
+    '#attached' => array(
+      'css' => array(drupal_get_path('module', 'fbphoto') . '/fbphoto.css'),
+    ),
+  );
+}
+
+function theme_fbphoto_album($variables) {
+  $album = &$variables['album'];
+  if (!empty($album)) {
+    foreach ($album['photos'] as $photo) {
+      $img = $photo->images[2];
+      $attributes['src']    = $img->source;
+      $attributes['height'] = $img->height;
+      $attributes['width']  = $img->width;
+      $attributes['title']  = isset($photo->name) ? $photo->name : '';
+      $output = '<img '. drupal_attributes($attributes) .' />';
+      $output = '<a href="'. $photo->images[1]->source .'">'. $output .'</a>';
+      $items[] = '<span>'. $output .'</span>';
+    }
+    return array(
+      '#theme' => 'item_list',
+      '#items' => $items,
+      '#attributes' => array('id' => "fbphoto-album-{$album['info']->id}", 'class' => array('fbphoto-album')),
+      '#prefix' => '<div>',
+      '#suffix' => '<div class="clearfix"></div></div>',
+      '#attached' => array(
+        'css' => array(drupal_get_path('module', 'fbphoto') . '/fbphoto.css'),
+      ),
+    );
+  }
+}

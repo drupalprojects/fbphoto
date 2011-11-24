@@ -3,6 +3,7 @@
 /**
  * @file
  * FBPhoto module.
+ * 
  */
 
 /**
@@ -13,12 +14,14 @@ function fbphoto_filter_info() {
     'title' => t('Facebook photo'), 
     'description' => t('Converts [fb:https://www.facebook.com/media/set/?set=a.299178216769602.79888.201606459860112&type=3] to inline images.'), 
     'process callback' => 'fbphoto_filter_callback', 
-    'tips callback' => '_filter_autop_tips',
-    'cache' => FALSE, # @TODO: Remove me
+    'tips callback' => 'fbphoto_filter_tips',
   );
   return $filters;
 }
 
+/**
+ * Callback for filter.
+ */
 function fbphoto_filter_callback($text, $filter) {
   if (stripos($text, '[fb:') === FALSE) return;
 
@@ -59,6 +62,16 @@ function fbphoto_filter_callback($text, $filter) {
   return $text;
 }
 
+/**
+ * Tip for filter.
+ */
+function fbphoto_filter_tips($filter, $format, $long = FALSE) {
+  return t('Use [fb:PATH] to embed Facebook album/photo. With PATH is URL to view your album/photo, they must have public access.');
+}
+
+/**
+ * Get photo info.
+ */
 function fbphoto_get_photo($id, $refresh = FALSE) {
   if (!$refresh && ($cache = cache_get("fbphoto:{$id}"))) {
     return $cache->data;
@@ -70,6 +83,9 @@ function fbphoto_get_photo($id, $refresh = FALSE) {
   }
 }
 
+/**
+ * Get album info.
+ */
 function fbphoto_get_album_photos($id, $refresh = FALSE) {
   if (!$refresh && ($cache = cache_get("fbphoto:{$id}"))) {
     return $cache->data;
@@ -84,6 +100,9 @@ function fbphoto_get_album_photos($id, $refresh = FALSE) {
   }
 }
 
+/**
+ * Fetch album photos.
+ */
 function fbphoto_fetch_album_photos($album, $id = NULL, $url = NULL) {  
   $photos = array();
   $url = !empty($url) ? $url : "http://graph.facebook.com/{$id}/photos";
@@ -166,7 +185,6 @@ function fbphoto_get_params($url) {
  * Implements hook_theme().
  */
 function fbphoto_theme() {
-  dsm(__FUNCTION__);
   return array(
     'fbphoto_photo' => array(
       'variables' => array('photo' => NULL)
@@ -177,6 +195,9 @@ function fbphoto_theme() {
   );
 }
 
+/**
+ * Theming function for photo.
+ */
 function theme_fbphoto_photo($variables) {
   $photo = &$variables['photo'];
   $img = $photo->images[1];
@@ -195,6 +216,9 @@ function theme_fbphoto_photo($variables) {
   );
 }
 
+/**
+ * Theming function for album.
+ */
 function theme_fbphoto_album($variables) {
   $album = &$variables['album'];
   if (!empty($album)) {

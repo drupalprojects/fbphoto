@@ -30,7 +30,6 @@ function fbphoto_filter_callback($text, $filter) {
       if ($info = fbphoto_get_params($url)) {
         switch ($info['type']) {
           case 'album':
-            dsm($info['id']);
             $album  = fbphoto_get_album_photos($info['id']);
             $output = theme('fbphoto_album', array('album' => $album));
             $output = drupal_render($output);

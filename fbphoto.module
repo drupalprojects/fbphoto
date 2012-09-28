@@ -71,7 +71,7 @@ function fbphoto_get_photo($id, $refresh = FALSE) {
   }
   
   if ($photo = fbphoto_request("http://graph.facebook.com/{$id}")) {
-    cache_set("fbphoto:{$id}", $photo, 'cache');
+    cache_set("fbphoto:{$id}", $photo, 'cache', CACHE_TEMPORARY);
     return $photo;
   }
 }
@@ -87,7 +87,7 @@ function fbphoto_get_album_photos($id, $refresh = FALSE) {
   if ($album = fbphoto_request("http://graph.facebook.com/{$id}")) {
     if ($photos = fbphoto_fetch_album_photos($album, $id)) {
       $return = array('info' => $album, 'photos' => $photos);
-      cache_set("fbphoto:{$id}", $return, 'cache');
+      cache_set("fbphoto:{$id}", $return, 'cache', CACHE_TEMPORARY);
       return $return;
     }
   }

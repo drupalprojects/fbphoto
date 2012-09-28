@@ -19,6 +19,10 @@ function fbphoto_filter_info() {
   return $filters;
 }
 
+/**
+ * Filter process callback.
+ * @see fbphoto_filter_info().
+ */
 function fbphoto_filter_callback($text, $filter) {
   if (stripos($text, '[fb:') === FALSE) return;
 
@@ -58,6 +62,9 @@ function fbphoto_filter_callback($text, $filter) {
   return $text;
 }
 
+/**
+ * Get Facebook photo by ID.
+ */
 function fbphoto_get_photo($id, $refresh = FALSE) {
   if (!$refresh && ($cache = cache_get("fbphoto:{$id}"))) {
     return $cache->data;
@@ -69,11 +76,14 @@ function fbphoto_get_photo($id, $refresh = FALSE) {
   }
 }
 
+/**
+ * Get Facebook album photos by ID.
+ */
 function fbphoto_get_album_photos($id, $refresh = FALSE) {
   if (!$refresh && ($cache = cache_get("fbphoto:{$id}"))) {
     return $cache->data;
   }
-  
+
   if ($album = fbphoto_request("http://graph.facebook.com/{$id}")) {
     if ($photos = fbphoto_fetch_album_photos($album, $id)) {
       $return = array('info' => $album, 'photos' => $photos);
@@ -83,6 +93,9 @@ function fbphoto_get_album_photos($id, $refresh = FALSE) {
   }
 }
 
+/**
+ * Fetch Album photo.
+ */
 function fbphoto_fetch_album_photos($album, $id = NULL, $url = NULL) {  
   $photos = array();
   $url = !empty($url) ? $url : "http://graph.facebook.com/{$id}/photos";
@@ -165,7 +178,6 @@ function fbphoto_get_params($url) {
  * Implements hook_theme().
  */
 function fbphoto_theme() {
-  dsm(__FUNCTION__);
   return array(
     'fbphoto_photo' => array(
       'variables' => array('photo' => NULL)
@@ -176,6 +188,9 @@ function fbphoto_theme() {
   );
 }
 
+/**
+ * Theming callback to render picture.
+ */
 function theme_fbphoto_photo($variables) {
   $photo = &$variables['photo'];
   $img = $photo->images[1];
@@ -194,6 +209,9 @@ function theme_fbphoto_photo($variables) {
   );
 }
 
+/**
+ * Theming callback to render albumn.
+ */
 function theme_fbphoto_album($variables) {
   $album = &$variables['album'];
   if (!empty($album)) {

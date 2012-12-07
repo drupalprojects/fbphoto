@@ -32,25 +32,31 @@ function fbphoto_filter_callback($text, $filter) {
       $url    = substr($match, 4, -1);
       $output = '';
       if ($info = fbphoto_get_params($url)) {
-        switch ($info['type']) {
-          case 'album':
-            $album  = fbphoto_get_album_photos($info['id']);
-            $output = theme('fbphoto_album', array('album' => $album));
-            $output = drupal_render($output);
-            unset($album);
-            break;
-          case 'photo':
-            $photo  = fbphoto_get_photo($info['id']);
-            $output = theme('fbphoto_photo', array('photo' => $photo));
-            $output = drupal_render($output);
-            unset($photo);
-            break;
-          default:
-            $output = '<!--- fbphoto: unsupported -->';
-            break;
+        try {
+          switch ($info['type']) {
+            case 'album':
+              $album  = fbphoto_get_album_photos($info['id']);
+              $output = theme('fbphoto_album', array('album' => $album));
+              $output = drupal_render($output);
+              unset($album);
+              break;
+            case 'photo':
+              $photo  = fbphoto_get_photo($info['id']);
+              $output = theme('fbphoto_photo', array('photo' => $photo));
+              $output = drupal_render($output);
+              unset($photo);
+              break;
+            default:
+              $output = '<!--- fbphoto: unsupported -->';
+              break;
+          }
+        }
+        catch (Exception $e) {
+          $output = '<!--- fbphoto: Exception -->';
+          watchdog(WATCHDOG_ERROR, $e->getMessage());
         }
       }
-      
+
       $find[]    = $match;
       $replace[] = $output;
     }
@@ -196,7 +202,6 @@ function theme_fbphoto_album($variables) {
   $album = &$variables['album'];
   if (!empty($album)) {
     foreach ($album['photos'] as $photo) {
-      # dsm($photo);
       $img = $photo->images[6];
       $attributes['src']    = $img->source;
       $attributes['height'] = $img->height;

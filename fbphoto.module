@@ -132,7 +132,7 @@ function fbphoto_request($url, $json = TRUE, $method = 'GET', $params = NULL) {
 function fbphoto_get_params($url) {
   $url   = parse_url($url);
   $type  = strpos($url['path'], 'photo.php') !== FALSE ? 'photo' : 'album';
-  parse_str($url['query'], $query);
+  @parse_str($url['query'], $query);
   if ($type === 'album') {
     // set=a.[ALBUM-ID].[RANDOM-NUMBER].[PROFILE-ID]
     if (isset($query['set']) && strpos($query['set'], 'a.') === 0) {

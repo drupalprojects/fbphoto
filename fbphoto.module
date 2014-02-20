@@ -3,21 +3,9 @@
 /**
  * @file
  * FBPhoto module.
- *
  */
 
-/**
- * Implements hook_filter_info().
- */
-function fbphoto_filter_info() {
-  $filters['fbphoto'] = array(
-    'title' => t('Facebook photo'),
-    'description' => t('Converts [fb:https://www.facebook.com/media/set/?set=a.299178216769602.79888.201606459860112&type=3] to inline images.'),
-    'process callback' => 'fbphoto_filter_callback',
-    'tips callback' => 'fbphoto_filter_tips',
-  );
-  return $filters;
-}
+require_once dirname(__FILE__) . '/fbphoto.hooks.inc';
 
 /**
  * Callback for filter.
@@ -180,18 +168,6 @@ function fbphoto_get_params($url) {
   }
 }
 
-/**
- * Implements hook_theme().
- */
-function fbphoto_theme() {
-  return array(
-    'fbphoto_photo' => array(
-      'variables' => array('photo' => NULL)
-    ),
-    'fbphoto_album' => array(
-      'variables' => array('album' => NULL)
-    ),
-  );
 }
 
 /**

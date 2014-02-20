@@ -2,3 +2,5 @@ name = FBPhoto
 version = "7.x-1.x-dev"
 core = 7.x
 description = "Filter for Facebook photo."
+
+files[] = fbphoto.test

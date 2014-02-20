@@ -6,6 +6,7 @@
  */
 
 require_once dirname(__FILE__) . '/fbphoto.hooks.inc';
+require_once dirname(__FILE__) . '/fbphoto.inc';
 
 /**
  * Callback for filter.

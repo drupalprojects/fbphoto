@@ -3,7 +3,7 @@
 /**
  * @file
  * FBPhoto module.
- * 
+ *
  */
 
 /**
@@ -11,9 +11,9 @@
  */
 function fbphoto_filter_info() {
   $filters['fbphoto'] = array(
-    'title' => t('Facebook photo'), 
-    'description' => t('Converts [fb:https://www.facebook.com/media/set/?set=a.299178216769602.79888.201606459860112&type=3] to inline images.'), 
-    'process callback' => 'fbphoto_filter_callback', 
+    'title' => t('Facebook photo'),
+    'description' => t('Converts [fb:https://www.facebook.com/media/set/?set=a.299178216769602.79888.201606459860112&type=3] to inline images.'),
+    'process callback' => 'fbphoto_filter_callback',
     'tips callback' => 'fbphoto_filter_tips',
   );
   return $filters;
@@ -33,7 +33,6 @@ function fbphoto_filter_callback($text, $filter) {
       if ($info = fbphoto_get_params($url)) {
         switch ($info['type']) {
           case 'album':
-            dsm($info['id']);
             $album  = fbphoto_get_album_photos($info['id']);
             $output = theme('fbphoto_album', array('album' => $album));
             $output = drupal_render($output);
@@ -50,11 +49,11 @@ function fbphoto_filter_callback($text, $filter) {
             break;
         }
       }
-      
+
       $find[]    = $match;
       $replace[] = $output;
     }
-    
+
     if (!empty($find)) {
       $text = str_replace($find, $replace, $text);
     }
@@ -76,7 +75,7 @@ function fbphoto_get_photo($id, $refresh = FALSE) {
   if (!$refresh && ($cache = cache_get("fbphoto:{$id}"))) {
     return $cache->data;
   }
-  
+
   if ($photo = fbphoto_request("http://graph.facebook.com/{$id}")) {
     cache_set("fbphoto:{$id}", $photo, 'cache');
     return $photo;
@@ -90,7 +89,7 @@ function fbphoto_get_album_photos($id, $refresh = FALSE) {
   if (!$refresh && ($cache = cache_get("fbphoto:{$id}"))) {
     return $cache->data;
   }
-  
+
   if ($album = fbphoto_request("http://graph.facebook.com/{$id}")) {
     if ($photos = fbphoto_fetch_album_photos($album, $id)) {
       $return = array('info' => $album, 'photos' => $photos);
@@ -103,7 +102,7 @@ function fbphoto_get_album_photos($id, $refresh = FALSE) {
 /**
  * Fetch album photos.
  */
-function fbphoto_fetch_album_photos($album, $id = NULL, $url = NULL) {  
+function fbphoto_fetch_album_photos($album, $id = NULL, $url = NULL) {
   $photos = array();
   $url = !empty($url) ? $url : "http://graph.facebook.com/{$id}/photos";
   if ($graph = fbphoto_request($url)) {
@@ -172,7 +171,7 @@ function fbphoto_get_params($url) {
   elseif ($type === 'photo' && isset($query['fbid']) && preg_match('/^[0-9]+$/', $query['fbid'])) {
     $id = $query['fbid'];
   }
-  
+
   if (!empty($id)) {
     return array(
       'type' => $type,

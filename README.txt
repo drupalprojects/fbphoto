@@ -1,5 +1,22 @@
-Install this module like other modules.
+Facebook Photo/Album Text format for Drupal
 
-After install, go to Text Format management form (admin/config/content/formats),
-configure your format you would like to support FBPhoto, reorder the filters,
-to let FBPhoto filter processed berfore filter "Convert URLs into links".
+### Install
+
+* This module has no dependency, you can enable it like any other Drupal modules.
+* Go to /admin/config/content/formats
+  * Apply "Facebook photo" filter to which text format we would like to support Facebook photo/album.
+  * Reorder the filters, make sure FBPhoto filter processed berfore filter "Convert URLs into links".
+
+### Usage
+
+* Then the filter is ready for our text. Try with:
+  * Album: [fb:https://www.facebook.com/media/set/?set=a.380743478891.164254.8427738891&type=3]
+  * Photo: [fb:https://www.facebook.com/8427738891/photos/a.380743478891.164254.8427738891/380744538891/]
+* We may need update the CSS to make the picture display nice on current Drupal theme.
+
+### Credits
+
+Andy Truong started the module using
+
+- Facebook Graph API
+- CURL library

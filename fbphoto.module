@@ -9,56 +9,22 @@ require_once dirname(__FILE__) . '/fbphoto.hooks.inc';
 require_once dirname(__FILE__) . '/fbphoto.inc';
 
 /**
- * Callback for filter.
+ * Filter process callback.
+ * @see fbphoto_filter_info().
  */
 function fbphoto_filter_callback($text, $filter) {
-  if (stripos($text, '[fb:') === FALSE) return;
+  $parser = new fbphoto_parser($text);
+  list($find, $replace) = $parser->parse();
 
-  preg_match_all('/(\[fb:[^\]]*\])/i', $text, $matches);
-  if (!empty($matches)) {
-    foreach ($matches[1] as $match) {
-      $url    = substr($match, 4, -1);
-      $output = '';
-      if ($info = fbphoto_get_params($url)) {
-        switch ($info['type']) {
-          case 'album':
-            $album  = fbphoto_get_album_photos($info['id']);
-            $output = theme('fbphoto_album', array('album' => $album));
-            $output = drupal_render($output);
-            unset($album);
-            break;
-          case 'photo':
-            $photo  = fbphoto_get_photo($info['id']);
-            $output = theme('fbphoto_photo', array('photo' => $photo));
-            $output = drupal_render($output);
-            unset($photo);
-            break;
-          default:
-            $output = '<!--- fbphoto: unsupported -->';
-            break;
-        }
-      }
-
-      $find[]    = $match;
-      $replace[] = $output;
-    }
-
-    if (!empty($find)) {
-      $text = str_replace($find, $replace, $text);
-    }
+  if (!empty($find)) {
+    $text = str_replace($find, $replace, $text);
   }
+
   return $text;
 }
 
 /**
- * Tip for filter.
- */
-function fbphoto_filter_tips($filter, $format, $long = FALSE) {
-  return t('Use [fb:PATH] to embed Facebook album/photo. With PATH is URL to view your album/photo, they must have public access.');
-}
-
-/**
- * Get photo info.
+ * Get Facebook photo by ID.
  */
 function fbphoto_get_photo($id, $refresh = FALSE) {
   if (!$refresh && ($cache = cache_get("fbphoto:{$id}"))) {
@@ -66,13 +32,13 @@ function fbphoto_get_photo($id, $refresh = FALSE) {
   }
 
   if ($photo = fbphoto_request("http://graph.facebook.com/{$id}")) {
-    cache_set("fbphoto:{$id}", $photo, 'cache');
+    cache_set("fbphoto:{$id}", $photo, 'cache', CACHE_TEMPORARY);
     return $photo;
   }
 }
 
 /**
- * Get album info.
+ * Get Facebook album photos by ID.
  */
 function fbphoto_get_album_photos($id, $refresh = FALSE) {
   if (!$refresh && ($cache = cache_get("fbphoto:{$id}"))) {
@@ -82,14 +48,14 @@ function fbphoto_get_album_photos($id, $refresh = FALSE) {
   if ($album = fbphoto_request("http://graph.facebook.com/{$id}")) {
     if ($photos = fbphoto_fetch_album_photos($album, $id)) {
       $return = array('info' => $album, 'photos' => $photos);
-      cache_set("fbphoto:{$id}", $return, 'cache');
+      cache_set("fbphoto:{$id}", $return, 'cache', CACHE_TEMPORARY);
       return $return;
     }
   }
 }
 
 /**
- * Fetch album photos.
+ * Fetch Album photo.
  */
 function fbphoto_fetch_album_photos($album, $id = NULL, $url = NULL) {
   $photos = array();
@@ -107,85 +73,33 @@ function fbphoto_fetch_album_photos($album, $id = NULL, $url = NULL) {
  * Helper function to perform the http requests.
  */
 function fbphoto_request($url, $json = TRUE, $method = 'GET', $params = NULL) {
-  $ch = curl_init();
-  curl_setopt($ch, CURLOPT_URL, $url);
-  curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-  if (strpos($url, 'https://') === 0) {
-    curl_setopt($ch, CURLOPT_PORT , 443);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-  }
-  if ($method === 'POST') {
-    curl_setopt($ch, CURLOPT_POST, TRUE);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
-  }
-
-  // Proxy
-  if (defined('FBPHOTO_CURL_PROXY')) {
-    curl_setopt($ch, CURLOPT_PROXY,     FBPHOTO_CURLOPT_PROXY);
-    curl_setopt($ch, CURLOPT_PROXYTYPE, FBPHOTO_CURLOPT_PROXYTYPE);
-    curl_setopt($ch, CURLOPT_PROXYPORT, FBPHOTO_CURLOPT_PROXYPORT);
-  }
-
-  if (!$response = curl_exec($ch)) {
-    $error = curl_error($ch);
-    drupal_set_message($error, 'error');
-  }
-  curl_close($ch);
-
-  if ($json) {
-    if ($response = json_decode($response)) {
-      return $response;
+  $response = drupal_http_request($url, array('method' => $method));
+  if (empty($response->error)) {
+    if ($response->data = json_decode($response->data)) {
+      return $response->data;
     }
+    throw new Exception('Can not parse response data');
   }
 
-  return $response;
+  throw new Exception($response->error);
 }
 
 /**
- * Get params from URL.
+ * Theming callback to render picture.
  */
-function fbphoto_get_params($url) {
-  $url   = parse_url($url);
-  $type  = strpos($url['path'], 'photo.php') !== FALSE ? 'photo' : 'album';
-  parse_str($url['query'], $query);
-  if ($type === 'album') {
-    // set=a.[ALBUM-ID].[RANDOM-NUMBER].[PROFILE-ID]
-    if (isset($query['set']) && strpos($query['set'], 'a.') === 0) {
-      $id = explode('.', $query['set']);
-      if (preg_match('/^[0-9]+$/', $id[1])) {
-        $id = $id[1];
-      }
-    }
-  }
-  elseif ($type === 'photo' && isset($query['fbid']) && preg_match('/^[0-9]+$/', $query['fbid'])) {
-    $id = $query['fbid'];
-  }
-
-  if (!empty($id)) {
-    return array(
-      'type' => $type,
-      'id'   => $id,
-    );
-  }
-}
-
-}
-
-/**
- * Theming function for photo.
- */
-function theme_fbphoto_photo($variables) {
-  $photo = &$variables['photo'];
+function theme_fbphoto_photo($vars) {
+  $photo = &$vars['photo'];
   $img = $photo->images[1];
+  $name = isset($photo->name) ? check_plain($photo->name) : check_plain(t("Picture from {$photo->from->name}"));
   return array(
     '#theme' => 'image',
     '#attributes' => array('id' => "fbphoto-photo-{$photo->id}"),
     '#path'   => $img->source,
     '#height' => $img->height,
     '#width'  => $img->width,
-    '#title'  => check_plain($photo->name),
+    '#title'  => $name,
     '#prefix' => '<div class="fbphoto-photo">',
-    '#suffix' => '<div class="caption">'. check_plain($photo->name) .'</div></div>',
+    '#suffix' => '<div class="caption">'. (isset($photo->name) ? $name : '') .'</div></div>',
     '#attached' => array(
       'css' => array(drupal_get_path('module', 'fbphoto') . '/fbphoto.css'),
     ),
@@ -193,21 +107,22 @@ function theme_fbphoto_photo($variables) {
 }
 
 /**
- * Theming function for album.
+ * Theming callback to render albumn.
  */
-function theme_fbphoto_album($variables) {
-  $album = &$variables['album'];
+function theme_fbphoto_album($vars) {
+  $album = &$vars['album'];
   if (!empty($album)) {
     foreach ($album['photos'] as $photo) {
-      $img = $photo->images[2];
+      $img = array_pop($photo->images);
       $attributes['src']    = $img->source;
       $attributes['height'] = $img->height;
       $attributes['width']  = $img->width;
       $attributes['title']  = isset($photo->name) ? $photo->name : '';
       $output = '<img '. drupal_attributes($attributes) .' />';
-      $output = '<a href="'. $photo->images[1]->source .'">'. $output .'</a>';
+      $output = '<a href="'. $photo->images[0]->source .'">'. $output .'</a>';
       $items[] = '<span>'. $output .'</span>';
     }
+
     return array(
       '#theme' => 'item_list',
       '#items' => $items,

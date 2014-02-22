@@ -4,7 +4,6 @@ div.item-list ul.fbphoto-album {
 }
 
 div.item-list ul.fbphoto-album li {
-  display: block;
   float: left;
   list-style: none outside none;
   border: 1px solid #CCC;
@@ -14,10 +13,11 @@ div.item-list ul.fbphoto-album li {
   background-color: #EEE;
 }
 
-div.item-list ul.fbphoto-album li span {
-  display: block;
-  height: 135px;
+div.item-list ul.fbphoto-album li div {
+  height: 206px;
+  width: 206px;
   overflow: hidden;
+  background-position: 50% 25%;
 }
 
 div.fbphoto-photo {

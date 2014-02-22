@@ -117,8 +117,11 @@ function theme_fbphoto_album($vars) {
       $bg_image = fbphoto_get_best_photo($photo);
       $items[] =
           l("<div style='background-image: url($bg_image);'></div>",
-              $photo->link,
-              array('html' => TRUE)
+              $photo->source,
+              array(
+                  'html' => TRUE,
+                  'attributes' => array("rel" => "lightshow[{$album['info']->id}]")
+              )
           );
     }
 

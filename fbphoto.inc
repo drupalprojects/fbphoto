@@ -7,7 +7,8 @@
  *
  * @see FBPhotoWebTestCase::testUrlParser()
  */
-class fbphoto_url_parser {
+class fbphoto_url_parser
+{
   private $url;
 
   public function __construct($url = NULL) {
@@ -75,7 +76,8 @@ class fbphoto_url_parser {
 /**
  * Class to parse replace pairs for a long text.
  */
-class fbphoto_parser {
+class fbphoto_parser
+{
   private $text;
   private $url_parser;
 
@@ -121,8 +123,7 @@ class fbphoto_parser {
           default:
             return '<!--- fbphoto: unsupported -->';
         }
-      }
-      catch (Exception $e) {
+      } catch (Exception $e) {
         watchdog(WATCHDOG_ERROR, $e->getMessage());
         $output = '<!--- fbphoto: Exception -->';
       }

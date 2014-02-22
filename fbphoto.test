@@ -4,12 +4,13 @@
  * Test me:
  *    drush test-run --dirty 'Drupal\fbphoto\Test\FBPhotoTest'
  */
-class FBPhotoWebTestCase extends \DrupalWebTestCase {
+class FBPhotoWebTestCase extends \DrupalWebTestCase
+{
   public function getInfo() {
     return array(
-      'name' => 'Facebook Photo Filter',
-      'description' => 'Make sure the module is working correctly.',
-      'group' => 'fbphoto',
+        'name' => 'Facebook Photo Filter',
+        'description' => 'Make sure the module is working correctly.',
+        'group' => 'fbphoto',
     );
   }
 
@@ -29,7 +30,7 @@ class FBPhotoWebTestCase extends \DrupalWebTestCase {
 
   public function testTextParser() {
     $token = '[fb:https://www.facebook.com/laptrinhviendrupal/photos/pb.679068042103560.-2207520000.1392907866./705454292798268/?type=3&theater]';
-    $parser = new fbphoto_parser('Trying an Facebook photo '. $token.' :)');
+    $parser = new fbphoto_parser('Trying an Facebook photo ' . $token . ' :)');
     list($find, $replace) = $parser->parse();
 
     $this->assertEqual(1, count($find));

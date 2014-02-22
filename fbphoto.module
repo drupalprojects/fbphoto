@@ -87,21 +87,21 @@ function fbphoto_request($url, $json = TRUE, $method = 'GET', $params = NULL) {
  * Theming callback to render picture.
  */
 function theme_fbphoto_photo($vars) {
-  $photo = &$vars['photo'];
+  $photo = & $vars['photo'];
   $img = $photo->images[1];
   $name = isset($photo->name) ? check_plain($photo->name) : check_plain(t("Picture from {$photo->from->name}"));
   return array(
-    '#theme' => 'image',
-    '#attributes' => array('id' => "fbphoto-photo-{$photo->id}"),
-    '#path'   => $img->source,
-    '#height' => $img->height,
-    '#width'  => $img->width,
-    '#title'  => $name,
-    '#prefix' => '<div class="fbphoto-photo">',
-    '#suffix' => '<div class="caption">'. (isset($photo->name) ? $name : '') .'</div></div>',
-    '#attached' => array(
-      'css' => array(drupal_get_path('module', 'fbphoto') . '/fbphoto.css'),
-    ),
+      '#theme' => 'image',
+      '#attributes' => array('id' => "fbphoto-photo-{$photo->id}"),
+      '#path' => $img->source,
+      '#height' => $img->height,
+      '#width' => $img->width,
+      '#title' => $name,
+      '#prefix' => '<div class="fbphoto-photo">',
+      '#suffix' => '<div class="caption">' . (isset($photo->name) ? $name : '') . '</div></div>',
+      '#attached' => array(
+          'css' => array(drupal_get_path('module', 'fbphoto') . '/fbphoto.css'),
+      ),
   );
 }
 
@@ -109,29 +109,29 @@ function theme_fbphoto_photo($vars) {
  * Theming callback to render albumn.
  */
 function theme_fbphoto_album($vars) {
-  $album = &$vars['album'];
+  $album = & $vars['album'];
   $items = array();
   if (!empty($album)) {
     foreach ($album['photos'] as $photo) {
       $img = array_pop($photo->images);
-      $attributes['src']    = $img->source;
+      $attributes['src'] = $img->source;
       $attributes['height'] = $img->height;
-      $attributes['width']  = $img->width;
-      $attributes['title']  = isset($photo->name) ? $photo->name : '';
-      $output = '<img '. drupal_attributes($attributes) .' />';
-      $output = '<a href="'. $photo->images[0]->source .'">'. $output .'</a>';
-      $items[] = '<span>'. $output .'</span>';
+      $attributes['width'] = $img->width;
+      $attributes['title'] = isset($photo->name) ? $photo->name : '';
+      $output = '<img ' . drupal_attributes($attributes) . ' />';
+      $output = '<a href="' . $photo->images[0]->source . '">' . $output . '</a>';
+      $items[] = '<span>' . $output . '</span>';
     }
 
     return array(
-      '#theme' => 'item_list',
-      '#items' => $items,
-      '#attributes' => array('id' => "fbphoto-album-{$album['info']->id}", 'class' => array('fbphoto-album')),
-      '#prefix' => '<div>',
-      '#suffix' => '<div class="clearfix"></div></div>',
-      '#attached' => array(
-        'css' => array(drupal_get_path('module', 'fbphoto') . '/fbphoto.css'),
-      ),
+        '#theme' => 'item_list',
+        '#items' => $items,
+        '#attributes' => array('id' => "fbphoto-album-{$album['info']->id}", 'class' => array('fbphoto-album')),
+        '#prefix' => '<div>',
+        '#suffix' => '<div class="clearfix"></div></div>',
+        '#attached' => array(
+            'css' => array(drupal_get_path('module', 'fbphoto') . '/fbphoto.css'),
+        ),
     );
   }
 }

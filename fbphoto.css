@@ -6,8 +6,7 @@ div.item-list ul.fbphoto-album {
 div.item-list ul.fbphoto-album li {
   display: block;
   float: left;
-  list-style-type: none;
-  list-style-image: none;
+  list-style: none outside none;
   border: 1px solid #CCC;
   padding: 3px;
   margin-right: 5px;

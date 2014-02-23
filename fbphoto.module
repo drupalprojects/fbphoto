@@ -6,7 +6,6 @@
  */
 
 require_once dirname(__FILE__) . '/fbphoto.hooks.inc';
-require_once dirname(__FILE__) . '/fbphoto.inc';
 
 /**
  * Filter process callback.
@@ -111,6 +110,7 @@ function theme_fbphoto_photo($vars) {
  */
 function theme_fbphoto_album($vars) {
   $album = &$vars['album'];
+  $items = array();
   if (!empty($album)) {
     foreach ($album['photos'] as $photo) {
       $img = array_pop($photo->images);

@@ -95,7 +95,7 @@ class fbphoto_parser {
       preg_match_all('/(\[fb:[^\]]*\])/i', $this->text, $matches);
       if (!empty($matches[1])) {
         foreach ($matches[1] as $match) {
-          $find[]    = $match;
+          $find[] = $match;
           $replace[] = $this->buildRepaceItem(substr($match, 4, -1));
         }
       }
@@ -109,12 +109,12 @@ class fbphoto_parser {
       try {
         switch ($info['type']) {
           case 'album':
-            $album  = fbphoto_get_album_photos($info['id']);
+            $album = fbphoto_get_album_photos($info['id']);
             $output = theme('fbphoto_album', array('album' => $album));
             return drupal_render($output);
 
           case 'photo':
-            $photo  = fbphoto_get_photo($info['id']);
+            $photo = fbphoto_get_photo($info['id']);
             $output = theme('fbphoto_photo', array('photo' => $photo));
             return drupal_render($output);
 

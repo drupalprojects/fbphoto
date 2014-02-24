@@ -125,10 +125,9 @@ class fbphoto_parser
         }
       } catch (Exception $e) {
         watchdog(WATCHDOG_ERROR, $e->getMessage());
-        $output = '<!--- fbphoto: Exception -->';
+        return '<!--- fbphoto: Exception -->';
       }
     }
-
     return '';
   }
 }

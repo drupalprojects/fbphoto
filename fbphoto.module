@@ -34,6 +34,7 @@ function fbphoto_get_photo($id, $refresh = FALSE) {
     cache_set("fbphoto:{$id}", $photo, 'cache', CACHE_TEMPORARY);
     return $photo;
   }
+  return null;
 }
 
 /**
@@ -51,6 +52,7 @@ function fbphoto_get_album_photos($id, $refresh = FALSE) {
       return $return;
     }
   }
+  return null;
 }
 
 /**
@@ -71,7 +73,7 @@ function fbphoto_fetch_album_photos($album, $id = NULL, $url = NULL) {
 /**
  * Helper function to perform the http requests.
  */
-function fbphoto_request($url, $json = TRUE, $method = 'GET', $params = NULL) {
+function fbphoto_request($url, $method = 'GET') {
   $response = drupal_http_request($url, array('method' => $method));
   if (empty($response->error)) {
     if ($response->data = json_decode($response->data)) {
@@ -106,12 +108,11 @@ function theme_fbphoto_photo($vars) {
 }
 
 /**
- * Theming callback to render albumn.
+ * Theme callback to render album.
  */
 function theme_fbphoto_album($vars) {
   $items = array();
   $album = & $vars['album'];
-  $items = array();
   if (!empty($album)) {
     foreach ($album['photos'] as $photo) {
       $bg_image = fbphoto_get_best_photo($photo);
@@ -120,7 +121,7 @@ function theme_fbphoto_album($vars) {
               $photo->source,
               array(
                   'html' => TRUE,
-                  'attributes' => array("rel" => "lightshow[{$album['info']->id}]")
+                  'attributes' => array("class" => "colorbox", "rel" => "lightshow[{$album['info']->id}]")
               )
           );
     }
@@ -136,6 +137,7 @@ function theme_fbphoto_album($vars) {
         ),
     );
   }
+  return null;
 }
 
 /**

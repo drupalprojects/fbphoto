@@ -16,6 +16,11 @@ Demo: We can try the module on [simplytest.me](http://simplytest.me/project/fbph
   * Photo: `[fb:https://www.facebook.com/8427738891/photos/a.380743478891.164254.8427738891/380744538891/]`
 * We may need update the CSS to make the picture display nice on current Drupal theme.
 
+### Integration with other modules
+* Colorbox (https://drupal.org/project/colorbox)
+* Lightbox2 (https://drupal.org/project/lightbox2)
+* Attach (https://drupal.org/project/attach)
+
 ### Credits
 
 Andy Truong started the module using

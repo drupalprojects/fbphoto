@@ -121,7 +121,11 @@ function theme_fbphoto_album($vars) {
               $photo->source,
               array(
                   'html' => TRUE,
-                  'attributes' => array("class" => "colorbox", "rel" => "lightshow[{$album['info']->id}]")
+                  'attributes' => array(
+                      "class" => "colorbox",
+                      "rel" => "lightshow[{$album['info']->id}]",
+                      "title" => variable_get('site_name') . ', ' . variable_get('site_slogan'),
+                  )
               )
           );
     }

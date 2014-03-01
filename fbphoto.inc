@@ -82,8 +82,7 @@ class fbphoto_parser
   private $url_parser;
 
   public function __construct($text = NULL) {
-    $url_parser = new fbphoto_url_parser();
-    $this->url_parser = $url_parser;
+    $this->url_parser = new fbphoto_url_parser();
 
     if (!empty($text)) {
       $this->text = $text;
@@ -93,12 +92,17 @@ class fbphoto_parser
   public function parse() {
     $find = $replace = array();
 
-    if (FALSE !== stripos($this->text, '[fb:')) {
-      preg_match_all('/(\[fb:[^\]]*\])/i', $this->text, $matches);
-      if (!empty($matches[1])) {
-        foreach ($matches[1] as $match) {
-          $find[] = $match;
-          $replace[] = $this->buildRepaceItem(substr($match, 4, -1));
+    foreach (array(
+                 '[fb:' => '/(\[fb:[^\]]*\])/i',
+                 '[attach_fb' => '/(\[attach_fb:[^\]]*\])/i',
+             ) as $keyword => $pattern) {
+      if (FALSE !== stripos($this->text, $keyword)) {
+        preg_match_all($pattern, $this->text, $matches);
+        if (!empty($matches[1])) {
+          foreach ($matches[1] as $match) {
+            $find[] = $match;
+            $replace[] = $this->buildRepaceItem(substr($match, 4, -1));
+          }
         }
       }
     }

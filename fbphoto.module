@@ -8,6 +8,14 @@
 require_once dirname(__FILE__) . '/fbphoto.hooks.inc';
 
 /**
+ *
+ */
+function fbphoto_attach_module_callback($params) {
+  $parser = new fbphoto_parser();
+  return $parser->buildRepaceItem($params['url']);
+}
+
+/**
  * Filter process callback.
  * @see fbphoto_filter_info().
  */

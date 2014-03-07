@@ -1,20 +1,25 @@
 Facebook Photo/Album Text format for Drupal
 
-Demo: We can try the module on [simplytest.me](http://simplytest.me/project/fbphoto/7.x-1.0-beta1).
+Demo: The module can be tested on [simplytest.me](http://simplytest.me/project/fbphoto/7.x-1.0-beta3).
 
 ### Install
 
-* This module has no dependency, you can enable it like any other Drupal modules.
+* This module has no dependency and can enabled directly.
 * Go to /admin/config/content/formats
-  * Apply "Facebook photo" filter to which text format we would like to support Facebook photo/album.
-  * Reorder the filters, make sure FBPhoto filter processed berfore filter "Convert URLs into links".
+  * Preferably (but not necessary) create a new Input Format.
+  * Enable the "Facebook photo" filter on the desired text format.
+  * Reorder the filters, make sure FBPhoto filter is processed before the "Convert URLs into links" filter.
+  * If there is extra space between the photos, disable the "Convert line breaks into HTML (i.e. <br> and <p>)" filter.
 
 ### Usage
 
-* Then the filter is ready for our text. Try with:
+* The filter is now ready for use. Try with:
   * Album: `[fb:https://www.facebook.com/media/set/?set=a.380743478891.164254.8427738891&type=3]`
   * Photo: `[fb:https://www.facebook.com/8427738891/photos/a.380743478891.164254.8427738891/380744538891/]`
-* We may need update the CSS to make the picture display nice on current Drupal theme.
+* The CSS may need to be tweaked to make the picture display nice on current Drupal theme.
+* If the attach module is enabled, an alternate syntax can be used:
+  * Album: `[attach_fbphoto|url=https://www.facebook.com/media/set/?set=a.380743478891.164254.8427738891&type=3]`
+  * Photo: `[attach_fbphoto|url=https://www.facebook.com/8427738891/photos/a.380743478891.164254.8427738891/380744538891/]`
 
 ### Integration with other modules
 * Colorbox (https://drupal.org/project/colorbox)
@@ -23,9 +28,6 @@ Demo: We can try the module on [simplytest.me](http://simplytest.me/project/fbph
 
 ### Credits
 
-Andy Truong started the module using
-
-- Facebook Graph API
-- CURL library
+Andy Truong started development on the module. It is now co-maintained by Alan Lobo.
 
 To contribute: Please make Pull Request on [Github](https://github.com/andytruong/fbphoto).

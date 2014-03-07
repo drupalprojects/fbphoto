@@ -27,3 +27,20 @@ function fbphoto_filter_info() {
   );
   return $filters;
 }
+
+/**
+ * Implements hook_attach_plugin().
+ * This hook registers the functionality of this module with the attach
+ * plugin so that the attach compliant syntax is enabled.
+ */
+function fbphoto_attach_plugin() {
+  return array(
+      'fbphoto' => array(
+          'title' => 'Attach Fb Album / Photo inline',
+          'description' => 'Will render a facebook photo/album specified by the url at the tag',
+          'callback' => 'fbphoto_attach_module_callback',
+          'options' => array(),
+          'suffixes' => array('fbphoto'),
+      ),
+  );
+}

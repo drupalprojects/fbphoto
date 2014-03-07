@@ -92,17 +92,12 @@ class fbphoto_parser
   public function parse() {
     $find = $replace = array();
 
-    foreach (array(
-                 '[fb:' => '/(\[fb:[^\]]*\])/i',
-                 '[attach_fb' => '/(\[attach_fb:[^\]]*\])/i',
-             ) as $keyword => $pattern) {
-      if (FALSE !== stripos($this->text, $keyword)) {
-        preg_match_all($pattern, $this->text, $matches);
-        if (!empty($matches[1])) {
-          foreach ($matches[1] as $match) {
-            $find[] = $match;
-            $replace[] = $this->buildRepaceItem(substr($match, 4, -1));
-          }
+    if (FALSE !== stripos($this->text, '[fb:')) {
+      preg_match_all('/(\[fb:[^\]]*\])/i', $this->text, $matches);
+      if (!empty($matches[1])) {
+        foreach ($matches[1] as $match) {
+          $find[] = $match;
+          $replace[] = $this->buildRepaceItem(substr($match, 4, -1));
         }
       }
     }
